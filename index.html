@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Onsen Tattoo-Friendly au Japon</title>
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
+          sans-serif;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #map {
+        width: 100%;
+        height: 100vh;
+      }
+
+      .header {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        padding: 15px 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 24px;
+        color: #2c3e50;
+        margin-bottom: 5px;
+      }
+
+      .header p {
+        font-size: 14px;
+        color: #7f8c8d;
+      }
+
+      .leaflet-popup-content {
+        margin: 15px;
+        line-height: 1.6;
+      }
+
+      .popup-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+
+      .popup-info {
+        font-size: 13px;
+        color: #555;
+        margin: 5px 0;
+      }
+
+      .popup-label {
+        font-weight: bold;
+        color: #27ae60;
+      }
+
+      .popup-link {
+        display: inline-block;
+        margin-top: 10px;
+        color: #3498db;
+        text-decoration: none;
+      }
+
+      .popup-link:hover {
+        text-decoration: underline;
+      }
+
+      .stats {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        font-size: 14px;
+        color: #2c3e50;
+      }
+
+      .stats strong {
+        color: #27ae60;
+        font-size: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>🗾 Onsen Tattoo-Friendly</h1>
+      <p>Trouvez des onsen qui acceptent les tatouages au Japon</p>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="stats"><strong id="count">0</strong> établissements</div>
+
+    <!-- Leaflet JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+    <!-- Charge les données des onsen -->
+    <script src="onsen_data.js"></script>
+
+    <script>
+      // Initialise la carte centrée sur le Japon
+      const map = L.map("map").setView([35.6762, 139.6503], 6);
+
+      // Ajoute le fond de carte OpenStreetMap
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Icône personnalisée pour les marqueurs
+      const onsenIcon = L.icon({
+        iconUrl:
+          "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjMjdhZTYwIj48cGF0aCBkPSJNMTIgMkM4LjEzIDIgNSA1LjEzIDUgOWMwIDUuMjUgNyAxMyA3IDEzczctNy43NSA3LTEzYzAtMy44Ny0zLjEzLTctNy03em0wIDkuNWMtMS4zOCAwLTIuNS0xLjEyLTIuNS0yLjVzMS4xMi0yLjUgMi41LTIuNSAyLjUgMS4xMiAyLjUgMi41LTEuMTIgMi41LTIuNSAyLjV6Ii8+PC9zdmc+",
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [0, -30],
+      });
+
+      // Fonction pour charger et afficher les données
+      function loadData() {
+        let validCount = 0;
+
+        establishments.forEach((place) => {
+          if (place.latitude && place.longitude) {
+            validCount++;
+
+            const marker = L.marker([place.latitude, place.longitude], {
+              icon: onsenIcon,
+            }).addTo(map);
+
+            const popupContent = `
+                        <div class="popup-title">${place.nom}</div>
+                        <div class="popup-info">
+                            <span class="popup-label">Type:</span> ${place.type}
+                        </div>
+                        <div class="popup-info">
+                            <span class="popup-label">Adresse:</span> ${
+                              place.adresse
+                            }
+                        </div>
+                        ${
+                          place.telephone
+                            ? `<div class="popup-info"><span class="popup-label">Tél:</span> ${place.telephone}</div>`
+                            : ""
+                        }
+                        ${
+                          place.site_web && place.site_web !== "null"
+                            ? `<div class="popup-info"><a href="${place.site_web}" target="_blank" class="popup-link">Site web →</a></div>`
+                            : ""
+                        }
+                        <div class="popup-info">
+                            <a href="${
+                              place.url
+                            }" target="_blank" class="popup-link">Plus d'infos →</a>
+                        </div>
+                    `;
+
+            marker.bindPopup(popupContent);
+          }
+        });
+
+        // Met à jour le compteur
+        document.getElementById("count").textContent = validCount;
+
+        // Centre la carte sur tous les marqueurs
+        if (validCount > 0) {
+          const group = L.featureGroup(map._layers);
+          map.fitBounds(group.getBounds().pad(0.1));
+        }
+      }
+
+      // Charge les données au chargement de la page
+      loadData();
+    </script>
+  </body>
+</html>
