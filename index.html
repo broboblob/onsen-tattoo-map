@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Onsen Tattoo-Friendly au Japon</title>
+    <title>Tattoo-Friendly Onsen in Japan</title>
+    <link rel="icon" type="image/png" href="hot-springs_2668-fe0f.png" />
 
     <!-- Leaflet CSS -->
     <link
@@ -12,191 +13,439 @@
     />
 
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+                * {
+                  margin: 0;
+                  padding: 0;
+                  box-sizing: border-box;
+                }
+
+                body {
+                  font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+                  height: 100vh;
+                  overflow: hidden;
+                  background: #f5f5f5;
+                }
+
+                #map {
+                  width: 100%;
+                  height: 100vh;
+                }
+
+                .header {
+                  position: absolute;
+                  top: 20px;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  background: rgba(255, 255, 255, 0.95);
+                  padding: 15px 30px;
+                  border-radius: 10px;
+                  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+                  z-index: 1000;
+                  text-align: center;
+                  backdrop-filter: blur(10px);
+                }
+
+                .header h1 {
+                  font-size: 24px;
+                  color: #2c3e50;
+                  margin-bottom: 5px;
+                }
+
+                .header p {
+                  font-size: 14px;
+                  color: #7f8c8d;
+                  margin-bottom: 12px;
+                }
+
+                /* =======================
+                   FILTER BUTTONS
+                ======================= */
+
+                #filters input[type="checkbox"] {
+                  display: none;
+                }
+
+                .filter-btn {
+                  display: inline-block;
+                  padding: 6px 14px;
+                  margin: 0 6px;
+                  border-radius: 8px;
+                  background: #ffffff;
+                  border: 1px solid #ddd;
+                  color: #bbb;
+                  font-size: 13px;
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+                  user-select: none;
+                }
+
+                #filters input:checked + .filter-btn {
+                  color: #000;
+                }
+
+                #filters input:checked + .filter-btn.ryokan {
+                  border-color: #fbc02d;
+                }
+
+                #filters input:checked + .filter-btn.onsen {
+                  border-color: #0e9d58;
+                }
+
+                #filters input:checked + .filter-btn.sauna {
+                  border-color: #0288d1;
+                }
+
+                .filter-btn:hover {
+                  transform: translateY(-1px);
+                }
+
+                /* =======================
+                   STATS
+                ======================= */
+
+                .stats {
+                  position: absolute;
+                  bottom: 20px;
+                  left: 20px;
+                  background: rgba(255, 255, 255, 0.95);
+                  padding: 15px 20px;
+                  border-radius: 10px;
+                  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+                  z-index: 1000;
+                  font-size: 14px;
+                  color: #2c3e50;
+                  backdrop-filter: blur(10px);
+                }
+
+                .stats strong {
+                  color: #000000;
+                  font-size: 22px;
+                  font-weight: 600;
+                }
+
+                /* =======================
+                   POPUPS
+                ======================= */
+
+                .leaflet-popup-content-wrapper {
+                  border-radius: 12px;
+                }
+
+                .popup-title {
+                  font-size: 17px;
+                  font-weight: 600;
+                  margin-bottom: 10px;
+                }
+
+                .popup-info {
+                  font-size: 13px;
+                  margin: 6px 0;
+                }
+
+                .popup-label {
+                  font-weight: 600;
+                }
+
+                .popup-link {
+                  display: inline-block;
+                  margin-top: 10px;
+                  padding: 8px 14px;
+                  background: #dbd3dc;
+                  color: white;
+                  text-decoration: none;
+                  border-radius: 6px;
+                  font-size: 13px;
+                }
+
+                /* =======================
+                   DONATION
+                ======================= */
+
+                .donation-wrapper {
+                  position: fixed;
+                  bottom: 16px;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  display: flex;
+                  gap: 8px; /* espace entre les boutons */
+                  z-index: 1000;
+                }
+
+                /* bouton de donation existant, inchangé */
+                .donation-float {
+                  background: #181818;
+                  color: #ffffff;
+                  padding: 10px 14px;
+                  border-radius: 10px;
+                  font-size: 13px;
+                  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  transition:
+                    transform 0.2s ease,
+                    opacity 0.2s ease;
+                }
+
+                /* bouton Instagram */
+                .instagram-float {
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  width: 42px;
+                  height: 42px;
+                  background: white; /* couleur Instagram */
+                  border-radius: 10px; /* même arrondi que donation-float */
+                  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+                  cursor: pointer;
+                  transition:
+                    transform 0.2s ease,
+                    opacity 0.2s ease;
+                }
+
+                .instagram-float svg {
+                  width: 20px;
+                  height: 20px;
+                  fill: #181818; /* logo blanc */
+                }
+
+                /* hover */
+                .instagram-float:hover {
+                  transform: translateY(-2px);
+                  opacity: 0.9;
+                }
+
+                .donation-float:hover {
+                  transform: translateY(-2px);
+                  opacity: 0.9;
+                }
+
+                /* =======================
+             MOBILE
+          ======================= */
+
+                @media (max-width: 768px) {
+                  /* masquer stats */
+                  .stats {
+                    display: none;
+                  } /* header plus compact */
+                  .header {
+                    top: 10px;
+                    padding: 10px 12px;
+                    width: calc(100% - 128px);
+                  }
+                  .header h1 {
+                    font-size: 16px;
+                    margin-bottom: 2px;
+                  }
+                  .header p {
+                    font-size: 12px;
+                    margin-bottom: 8px;
+                  } /* LIGNE 3 : filtres uniquement */
+                  #filters {
+                    text-align: center;
+                  } /* forcer les filtres sur UNE ligne */
+                  .filter-btn {
+                    font-size: 11px;
+                    padding: 4px 8px;
+                    margin: 0 4px;
+                    white-space: nowrap;
+                  }
+                    .donation-wrapper {
+              display: flex;
+              justify-content: center; /* centrer les boutons */
+              align-items: center;     /* aligner verticalement */
+              gap: 8px;                /* espace entre les boutons */
+              bottom: 16px;
+              position: fixed;
+              left: 50%;
+              transform: translateX(-50%);
+              z-index: 1000;
+            }
+
+              .donation-float {
+        max-width: 140px;        /* limite la largeur du bouton */
+        white-space: normal;     /* permet le retour à la ligne */
+        text-align: center;      /* centrer le texte sur deux lignes */
+        flex-shrink: 0;
+        line-height: 1.2em;     /* espace entre les lignes */
       }
 
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
-          sans-serif;
-        height: 100vh;
-        overflow: hidden;
-      }
-
-      #map {
-        width: 100%;
-        height: 100vh;
-      }
-
-      .header {
-        position: absolute;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: white;
-        padding: 15px 30px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
-        text-align: center;
-      }
-
-      .header h1 {
-        font-size: 24px;
-        color: #2c3e50;
-        margin-bottom: 5px;
-      }
-
-      .header p {
-        font-size: 14px;
-        color: #7f8c8d;
-      }
-
-      .leaflet-popup-content {
-        margin: 15px;
-        line-height: 1.6;
-      }
-
-      .popup-title {
-        font-size: 16px;
-        font-weight: bold;
-        color: #2c3e50;
-        margin-bottom: 10px;
-      }
-
-      .popup-info {
-        font-size: 13px;
-        color: #555;
-        margin: 5px 0;
-      }
-
-      .popup-label {
-        font-weight: bold;
-        color: #27ae60;
-      }
-
-      .popup-link {
-        display: inline-block;
-        margin-top: 10px;
-        color: #3498db;
-        text-decoration: none;
-      }
-
-      .popup-link:hover {
-        text-decoration: underline;
-      }
-
-      .stats {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        background: white;
-        padding: 15px 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
-        font-size: 14px;
-        color: #2c3e50;
-      }
-
-      .stats strong {
-        color: #27ae60;
-        font-size: 20px;
-      }
+            .instagram-float {
+              flex-shrink: 0;          /* ne pas rétrécir */
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 40px;             /* carré, même hauteur que donation-float */
+              height: 40px;
+              border-radius: 10px;     /* même arrondi que donation-float */
+              background: #white;     /* même couleur que donation-float */
+            }
+          }
+                }
     </style>
   </head>
+
   <body>
-    <div class="header">
-      <h1>🗾 Onsen Tattoo-Friendly</h1>
-      <p>Trouvez des onsen qui acceptent les tatouages au Japon</p>
+    <div class="header" id="filters">
+      <h1>♨️ Tattoo-Friendly Onsen</h1>
+      <p>Find tattoo-friendly establishments in Japan.</p>
+
+      <input type="checkbox" id="ryokan" value="旅館" checked />
+      <label for="ryokan" class="filter-btn ryokan">Ryokan</label>
+
+      <input type="checkbox" id="onsen" value="温泉" checked />
+      <label for="onsen" class="filter-btn onsen">Onsen</label>
+
+      <input type="checkbox" id="sauna" value="サウナ" checked />
+      <label for="sauna" class="filter-btn sauna">Sauna / Spa</label>
     </div>
 
     <div id="map"></div>
 
-    <div class="stats"><strong id="count">0</strong> établissements</div>
+    <div class="stats"><strong id="count">0</strong> registered places</div>
 
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
-    <!-- Charge les données des onsen -->
+    <!-- Data -->
     <script src="onsen_data.js"></script>
 
     <script>
-      // Initialise la carte centrée sur le Japon
-      const map = L.map("map").setView([35.6762, 139.6503], 6);
+      const map = L.map("map", {
+        zoomControl: false,
+      }).setView([35.6762, 139.6503], 6);
 
-      // Ajoute le fond de carte OpenStreetMap
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
-        maxZoom: 19,
-      }).addTo(map);
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+        {
+          attribution: "&copy; OpenStreetMap &copy; CARTO",
+        },
+      ).addTo(map);
 
-      // Icône personnalisée pour les marqueurs
-      const onsenIcon = L.icon({
-        iconUrl:
-          "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjMjdhZTYwIj48cGF0aCBkPSJNMTIgMkM4LjEzIDIgNSA1LjEzIDUgOWMwIDUuMjUgNyAxMyA3IDEzczctNy43NSA3LTEzYzAtMy44Ny0zLjEzLTctNy03em0wIDkuNWMtMS4zOCAwLTIuNS0xLjEyLTIuNS0yLjVzMS4xMi0yLjUgMi41LTIuNSAyLjUgMS4xMiAyLjUgMi41LTEuMTIgMi41LTIuNSAyLjV6Ii8+PC9zdmc+",
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-        popupAnchor: [0, -30],
-      });
+      const markersLayer = L.layerGroup().addTo(map);
 
-      // Fonction pour charger et afficher les données
-      function loadData() {
-        let validCount = 0;
+      const typeTranslationsEN = {
+        温泉: "Onsen",
+        旅館: "Ryokan",
+        サウナ: "Sauna / Spa",
+      };
+
+      function createIcon(color) {
+        return L.icon({
+          iconUrl: `data:image/svg+xml;base64,${btoa(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24">
+              <path
+                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"
+                fill="${color}"
+                stroke="#fff"
+                stroke-width=".5"
+                stroke-linejoin="round"
+              />
+            </svg>
+          `)}`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 30],
+          popupAnchor: [0, -30],
+        });
+      }
+
+      const iconsByType = {
+        旅館: createIcon("#FBC02D"),
+        温泉: createIcon("#0E9D58"),
+        サウナ: createIcon("#0288D1"),
+      };
+
+      const checkboxes = document.querySelectorAll("#filters input");
+
+      function getActiveTypes() {
+        return Array.from(checkboxes)
+          .filter((cb) => cb.checked)
+          .map((cb) => cb.value);
+      }
+
+      function filterMarkers() {
+        markersLayer.clearLayers();
+        let count = 0;
+        const activeTypes = getActiveTypes();
 
         establishments.forEach((place) => {
-          if (place.latitude && place.longitude) {
-            validCount++;
-
-            const marker = L.marker([place.latitude, place.longitude], {
-              icon: onsenIcon,
-            }).addTo(map);
+          if (
+            place.latitude &&
+            place.longitude &&
+            activeTypes.includes(place.type)
+          ) {
+            count++;
 
             const popupContent = `
-                        <div class="popup-title">${place.nom}</div>
-                        <div class="popup-info">
-                            <span class="popup-label">Type:</span> ${place.type}
-                        </div>
-                        <div class="popup-info">
-                            <span class="popup-label">Adresse:</span> ${
-                              place.adresse
-                            }
-                        </div>
-                        ${
-                          place.telephone
-                            ? `<div class="popup-info"><span class="popup-label">Tél:</span> ${place.telephone}</div>`
-                            : ""
-                        }
-                        ${
-                          place.site_web && place.site_web !== "null"
-                            ? `<div class="popup-info"><a href="${place.site_web}" target="_blank" class="popup-link">Site web →</a></div>`
-                            : ""
-                        }
-                        <div class="popup-info">
-                            <a href="${
-                              place.url
-                            }" target="_blank" class="popup-link">Plus d'infos →</a>
-                        </div>
-                    `;
+              <div class="popup-title">
+                ${(place.nom_romaji || place.nom).toUpperCase()}
+              </div>
+              <div class="popup-info">
+                <span class="popup-label">Type:</span>
+                ${typeTranslationsEN[place.type] || place.type}
+              </div>
+              <div class="popup-info">
+                <span class="popup-label">Address:</span> ${place.adresse}
+              </div>
+              ${
+                place.telephone
+                  ? `<div class="popup-info"><span class="popup-label">Tel:</span> ${place.telephone}</div>`
+                  : ""
+              }
+              ${
+                place.site_web
+                  ? `<div class="popup-info"><a href="${place.site_web}" target="_blank">Website</a></div>`
+                  : ""
+              }
+              <a href="${place.url}" target="_blank" class="popup-link">
+                More info →
+              </a>
+            `;
 
-            marker.bindPopup(popupContent);
+            L.marker([place.latitude, place.longitude], {
+              icon: iconsByType[place.type],
+            })
+              .bindPopup(popupContent)
+              .addTo(markersLayer);
           }
         });
 
-        // Met à jour le compteur
-        document.getElementById("count").textContent = validCount;
-
-        // Centre la carte sur tous les marqueurs
-        if (validCount > 0) {
-          const group = L.featureGroup(map._layers);
-          map.fitBounds(group.getBounds().pad(0.1));
-        }
+        document.getElementById("count").textContent = count;
       }
 
-      // Charge les données au chargement de la page
-      loadData();
+      checkboxes.forEach((cb) => cb.addEventListener("change", filterMarkers));
+
+      filterMarkers();
     </script>
+
+    <div class="donation-wrapper">
+      <div class="donation-float">
+        ☕ If this map helped you, consider supporting the project
+      </div>
+
+      <a
+        href="https://www.instagram.com/tokyotidien"
+        target="_blank"
+        class="instagram-float"
+      >
+        <!-- Instagram SVG blanc mis à jour -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          fill="white"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M7.46494 1.066C8.63828 1.01222 9.01228 1 12 1C14.9883 1 15.3617 1.01283 16.5344 1.066C17.7059 1.11917 18.5059 1.30556 19.2056 1.5775C19.9395 1.85381 20.6043 2.28674 21.1538 2.84617C21.7133 3.3956 22.1463 4.06046 22.4225 4.79439C22.6944 5.49411 22.8802 6.29406 22.934 7.46494C22.9878 8.63828 23 9.01228 23 12C23 14.9877 22.9872 15.3617 22.934 16.5351C22.8808 17.7059 22.6944 18.5059 22.4225 19.2056C22.1414 19.9286 21.7649 20.5427 21.1538 21.1538C20.6044 21.7133 19.9395 22.1463 19.2056 22.4225C18.5059 22.6944 17.7059 22.8802 16.5351 22.934C15.3617 22.9878 14.9877 23 12 23C9.01228 23 8.63828 22.9872 7.46494 22.934C6.29406 22.8808 5.49411 22.6944 4.79439 22.4225C4.07144 22.1414 3.45728 21.7649 2.84617 21.1538C2.28664 20.6044 1.85368 19.9395 1.5775 19.2056C1.30556 18.5059 1.11978 17.7059 1.066 16.5351C1.01222 15.3617 1 14.9883 1 12C1 9.01167 1.01283 8.63828 1.066 7.46556C1.11917 6.29406 1.30556 5.49411 1.5775 4.79439C1.85381 4.06051 2.28674 3.39568 2.84617 2.84617C3.39559 2.28664 4.06045 1.85368 4.79439 1.5775C5.49411 1.30556 6.29406 1.11978 7.46494 1.066ZM16.4452 3.046C15.2853 2.99344 14.937 2.98183 12 2.98183C9.063 2.98183 8.71467 2.99344 7.55478 3.046C6.48228 3.09489 5.89989 3.27394 5.51244 3.42489C4.99911 3.62411 4.63244 3.86244 4.24744 4.24744C3.86306 4.63244 3.62411 4.99911 3.42489 5.51244C3.27394 5.89989 3.09489 6.48228 3.046 7.55478C2.99344 8.71467 2.98183 9.063 2.98183 12C2.98183 14.937 2.99344 15.2853 3.046 16.4452C3.09489 17.5177 3.27394 18.1001 3.42489 18.4876C3.60111 18.9654 3.88219 19.3976 4.24744 19.7526C4.60234 20.1178 5.03461 20.3989 5.51244 20.5751C5.89989 20.7261 6.48228 20.9051 7.55478 20.954C8.71467 21.0066 9.06239 21.0182 12 21.0182C14.9376 21.0182 15.2853 21.0066 16.4452 20.954C17.5177 20.9051 18.1001 20.7261 18.4876 20.5751C19.0009 20.3759 19.3676 20.1376 19.7526 19.7526C20.1178 19.3977 20.3989 18.9654 20.5751 18.4876C20.7261 18.1001 20.9051 17.5177 20.954 16.4452C21.0066 15.2853 21.0182 14.937 21.0182 12C21.0182 9.063 21.0066 8.71467 20.954 7.55478C20.9051 6.48228 20.7261 5.89989 20.5751 5.51244C20.3759 4.99911 20.1376 4.63244 19.7526 4.24744C19.3676 3.86306 19.0009 3.62411 18.4876 3.42489C18.1001 3.27394 17.5177 3.09489 16.4452 3.046ZM10.5955 15.3909C11.0408 15.5754 11.518 15.6703 12 15.6703C12.9735 15.6703 13.907 15.2836 14.5953 14.5953C15.2837 13.907 15.6704 12.9734 15.6704 12C15.6704 11.0266 15.2837 10.093 14.5953 9.40468C13.907 8.71636 12.9735 8.32966 12 8.32966C11.518 8.32966 11.0408 8.4246 10.5955 8.60905C10.1501 8.7935 9.74553 9.06385 9.40471 9.40468C9.06389 9.7455 8.79353 10.1501 8.60908 10.5954C8.42463 11.0407 8.3297 11.518 8.3297 12C8.3297 12.482 8.42463 12.9593 8.60908 13.4046C8.79353 13.8499 9.06389 14.2545 9.40471 14.5953C9.74553 14.9361 10.1501 15.2065 10.5955 15.3909ZM8.00205 8.00201C9.06238 6.94168 10.5005 6.34599 12 6.34599C13.4996 6.34599 14.9377 6.94168 15.998 8.00201C17.0583 9.06234 17.654 10.5005 17.654 12C17.654 13.4995 17.0583 14.9376 15.998 15.998C14.9377 17.0583 13.4996 17.654 12 17.654C10.5005 17.654 9.06238 17.0583 8.00205 15.998C6.94172 14.9376 6.34603 13.4995 6.34603 12C6.34603 10.5005 6.94172 9.06234 8.00205 8.00201ZM18.9077 7.18838C19.1583 6.93773 19.2991 6.59779 19.2991 6.24333C19.2991 5.88886 19.1583 5.54892 18.9077 5.29828C18.657 5.04764 18.3171 4.90683 17.9626 4.90683C17.6082 4.90683 17.2682 5.04764 17.0176 5.29828C16.7669 5.54892 16.6261 5.88886 16.6261 6.24333C16.6261 6.59779 16.7669 6.93773 17.0176 7.18838C17.2682 7.43902 17.6082 7.57983 17.9626 7.57983C18.3171 7.57983 18.657 7.43902 18.9077 7.18838Z"
+          />
+        </svg>
+      </a>
+    </div>
   </body>
 </html>
