@@ -382,10 +382,10 @@
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://tattoofriendly.org/" />
-    <meta property="og:title" content="Tattoos? No problem." />
+    <meta property="og:title" content="Tattoo? No problem." />
     <meta
       property="og:description"
-      content="The interactive map to find tattoo-friendly hot springs in Japan. Explore freely."
+      content="The interactive map to find tattoo-friendly onsens and sentos in Japan. Explore freely."
     />
     <meta
       property="og:image"
@@ -394,7 +394,7 @@
 
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://tattoofriendly.org/" />
-    <meta property="twitter:title" content="Tattoos? No problem." />
+    <meta property="twitter:title" content="Tattoo? No problem." />
     <meta
       property="twitter:description"
       content="Find the best tattoo-friendly onsens in Japan. Simple, interactive and updated."
@@ -501,10 +501,17 @@
         [35.6762, 139.6503],
         6,
       );
+      // Clé CARTO gratuite : https://carto.com/basemaps/apikey
+      // (visible dans le code source : c'est normal pour une clé de tuiles)
+      const CARTO_KEY = "cb1_5bjf_1_8eea8165a48339d579d449b6";
+
       L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+        `https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`,
         {
-          attribution: "&copy; OpenStreetMap &copy; CARTO",
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attribution/">CARTO</a>',
+          maxNativeZoom: 18,
+          maxZoom: 20,
         },
       ).addTo(map);
 
