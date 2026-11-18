@@ -6,6 +6,14 @@
     <title>Tattoo-Friendly Onsen in Japan</title>
     <link rel="icon" type="image/png" href="hot-springs_2668-fe0f.png" />
 
+    <!-- Police : Funnel Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap"
+      rel="stylesheet"
+    />
+
     <!-- Leaflet CSS -->
     <link
       rel="stylesheet"
@@ -378,14 +386,102 @@
           width: 65px;
         }
       }
+
+      /* ===== Desktop : header + carte dans un cadre arrondi ===== */
+      .site-header {
+        display: none;
+      }
+
+      @media (min-width: 769px) {
+        body {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          padding: 28px 32px 32px;
+          background: #121212;
+        }
+
+        .site-header {
+          display: block;
+          flex-shrink: 0;
+        }
+
+        .site-header h1 {
+          font-family: "Funnel Display", -apple-system, "Segoe UI", Arial,
+            sans-serif;
+          font-weight: 800;
+          font-size: 40px;
+          line-height: 1;
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
+          color: #ffffff;
+        }
+
+        .site-header p {
+          margin-top: 10px;
+          max-width: 640px;
+          font-size: 15px;
+          line-height: 1.45;
+          color: rgba(255, 255, 255, 0.75);
+        }
+
+        .map-frame {
+          position: relative;
+          flex: 1;
+          min-height: 0;
+          border-radius: 24px;
+          overflow: hidden;
+          background: #1a1a1a;
+          box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+        }
+
+        #map {
+          position: absolute;
+          inset: 0;
+          width: auto;
+          height: auto;
+        }
+
+        /* Filtres en haut à gauche du cadre */
+        .header {
+          top: 16px;
+          left: 16px;
+          transform: none;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 10px;
+          border-radius: 12px;
+          text-align: left;
+        }
+        .header h1,
+        .header p {
+          display: none;
+        }
+        .filter-btn {
+          margin: 0;
+        }
+
+        .stats {
+          bottom: 16px;
+          left: 16px;
+        }
+        .lang-dropdown {
+          bottom: 16px;
+          right: 16px;
+        }
+        .donation-wrapper {
+          bottom: 48px;
+        }
+      }
     </style>
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://tattoofriendly.org/" />
-    <meta property="og:title" content="Tattoo? No problem." />
+    <meta property="og:title" content="Tattoos? No problem." />
     <meta
       property="og:description"
-      content="The interactive map to find tattoo-friendly onsens and sentos in Japan. Explore freely."
+      content="The interactive map to find tattoo-friendly hot springs in Japan. Explore freely."
     />
     <meta
       property="og:image"
@@ -394,7 +490,7 @@
 
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://tattoofriendly.org/" />
-    <meta property="twitter:title" content="Tattoo? No problem." />
+    <meta property="twitter:title" content="Tattoos? No problem." />
     <meta
       property="twitter:description"
       content="Find the best tattoo-friendly onsens in Japan. Simple, interactive and updated."
@@ -406,6 +502,15 @@
   </head>
 
   <body>
+    <header class="site-header">
+      <h1>Tattoo♨️Friendly</h1>
+      <p id="intro">
+        The interactive map of tattoo-friendly onsens, ryokans and saunas in
+        Japan. Pick a category, zoom in and explore freely.
+      </p>
+    </header>
+
+    <main class="map-frame">
     <div class="header" id="filters">
       <h1>♨️ Tattoo-Friendly Onsen</h1>
       <p>Find tattoo-friendly establishments in Japan.</p>
@@ -434,6 +539,7 @@
         <a href="#" onclick="changeLanguage('de', event)">DE</a>
       </div>
     </div>
+    </main>
 
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -491,6 +597,12 @@
           support:
             "☕ Wenn diese Karte geholfen hat, unterstützen Sie das Projekt",
         },
+      };
+
+      const introTexts = {
+        en: "The interactive map of tattoo-friendly onsens, ryokans and saunas in Japan. Pick a category, zoom in and explore freely.",
+        fr: "La carte interactive des onsens, ryokans et saunas qui acceptent les tatouages au Japon. Choisissez une catégorie, zoomez et explorez librement.",
+        de: "Die interaktive Karte tattoo-freundlicher Onsen, Ryokans und Saunen in Japan. Kategorie wählen, hineinzoomen und frei erkunden.",
       };
 
       let currentLang = localStorage.getItem("language") || "en";
@@ -608,6 +720,7 @@
           currentLang.toUpperCase();
         document.querySelector(".header h1").textContent = t.title;
         document.querySelector(".header p").textContent = t.subtitle;
+        document.getElementById("intro").textContent = introTexts[currentLang];
         document.querySelector('label[for="ryokan"]').textContent = t.ryokan;
         document.querySelector('label[for="onsen"]').textContent = t.onsen;
         document.querySelector('label[for="sauna"]').textContent = t.sauna;
